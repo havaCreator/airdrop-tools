@@ -3,7 +3,6 @@ Streams a state_export.json -> sorted groups by their key (auth, authz, ibc, ban
 This is useful for debugging state exports and airdrops
 '''
 
-import ijson
 import json
 import os
 

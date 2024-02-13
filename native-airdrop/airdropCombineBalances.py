@@ -116,5 +116,5 @@ def test():
         # print(bech32encode("cosmos", converted))
 
 if __name__ == '__main__':
-    # main()
-    test()
+    main()
+    # test()

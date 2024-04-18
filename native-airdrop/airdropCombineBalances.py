@@ -14,10 +14,13 @@ load_dotenv(os.path.join(parent_dir, ".env"))
 
 balances_dir = os.path.join(parent_dir, "_AIRDROP_BALANCES")
 os.makedirs(balances_dir, exist_ok=True)
+combined_dir = os.path.join(balances_dir, "combined")
+os.makedirs(combined_dir, exist_ok=True)
 
 # New Chain Airdrop logic
 SNAPSHOT_IGNORE_CONTRACTS = os.getenv('SNAPSHOT_IGNORE_CONTRACTS', 'false').lower().startswith('t')
 CHAINS_TO_COMBINE = os.getenv('CHAINS_TO_COMBINE', 'cosmos')
+KEY_PREFIX_DEFAULT = os.getenv('KEY_PREFIX', 'cosmos')
 
 airdrop_amounts = {} # 'addr': uamount
 
@@ -32,7 +35,7 @@ def main():
         print(f"Loaded {len(new_balances)} balances from {chain}")
 
         amount_before = len(airdrop_amounts)
-        add_balances(chain, new_balances)
+        add_balances(chain, new_balances, KEY_PREFIX_DEFAULT)
         print(f"Added {len(airdrop_amounts) - amount_before} new recipients from {chain}")
 
     # remove any addresses with 0 balance
@@ -52,18 +55,27 @@ def main():
     print(f"Total airdrop amount {total_airdrop_amount}")
     print(f"Total amount recipients {len(airdrop_amounts)}")
 
-def add_balances(chain, new_balances, key_chain='cosmos'):
+def add_balances(chain, new_balances, key_chain_default='cosmos'):
     global airdrop_amounts
 
     for addr, balance in new_balances.items():
         # get address to use as key
-        _, converted = bech32decode(addr)
+        destination_chain, converted = bech32decode(addr)
+        # because some chains have different key derivation paths, some of them do not fit to the default key_chain
+        # instead we use another one for them
+        key_chain = key_chain_default
+        if destination_chain in ['inj', 'dym']:
+            key_chain = 'inj'
+        elif destination_chain in ['agoric']:
+            key_chain = 'agoric'
+
         key_addr = bech32encode(key_chain, converted)
 
         if key_addr not in airdrop_amounts:
             airdrop_amounts[key_addr] = {'total_balance': 0.0}
         
-        airdrop_amounts[key_addr][chain] = addr
+        airdrop_amounts[key_addr][chain + " address"] = addr
+        airdrop_amounts[key_addr][chain + " rewards"] = float(balance)
         airdrop_amounts[key_addr]['total_balance'] += float(balance)
 
 
@@ -88,32 +100,24 @@ def save_to_csv(filename='airdrop.csv'):
         # print("No airdrop amounts to save!")
         return
 
-    with open(os.path.join(balances_dir, filename), 'w') as f:
+    with open(os.path.join(combined_dir, filename), 'w') as f:
         writer = csv.writer(f)
-        keys = ['key', 'total_balance'] + CHAINS_TO_COMBINE.split(',')
+        keys = ['key', 'total_balance']
+        for chain in CHAINS_TO_COMBINE.split(','):
+            keys.append(chain + " address")
+            keys.append(chain + " rewards")
         writer.writerow(keys)
         for addr, data in airdrop_amounts.items():
             row_to_write = [addr, data['total_balance']]
             for chain in CHAINS_TO_COMBINE.split(','):
-                if chain in data:
-                    row_to_write.append(data[chain])
+                if chain + " address" in data:
+                    row_to_write.append(data[chain + " address"])
+                    row_to_write.append(data[chain + " rewards"])
                 else:
+                    row_to_write.append("")
                     row_to_write.append("")
             writer.writerow(row_to_write)
 
-def test():
-    addresses = [
-        'celestia195asgku87kxgu48s447z0ryhsyn5rl3y95m9ju',
-        'cosmos195asgku87kxgu48s447z0ryhsyn5rl3y5724g3',
-        'juno195asgku87kxgu48s447z0ryhsyn5rl3yzvfw0d',
-        'osmo195asgku87kxgu48s447z0ryhsyn5rl3yu9e97r',
-        'chihuahua195asgku87kxgu48s447z0ryhsyn5rl3yht8mfn',
-        'inj1h0ypsdtjfcjynqu3m75z2zwwz5mmrj8rtk2g52',
-    ]
-    for addr in addresses:
-        hrp, converted = bech32decode(addr)
-        print(addr, hrp, converted)
-        # print(bech32encode("cosmos", converted))
 
 if __name__ == '__main__':
     main()

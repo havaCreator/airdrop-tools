@@ -178,18 +178,29 @@ def save_to_csv(filename='airdrop.csv'):
 
 def test():
     addresses = [
-        'celestia195asgku87kxgu48s447z0ryhsyn5rl3y95m9ju',
-        'cosmos195asgku87kxgu48s447z0ryhsyn5rl3y5724g3',
-        'juno195asgku87kxgu48s447z0ryhsyn5rl3yzvfw0d',
-        'osmo195asgku87kxgu48s447z0ryhsyn5rl3yu9e97r',
-        'chihuahua195asgku87kxgu48s447z0ryhsyn5rl3yht8mfn',
-        'inj1h0ypsdtjfcjynqu3m75z2zwwz5mmrj8rtk2g52',
+        # 'celestia195asgku87kxgu48s447z0ryhsyn5rl3y95m9ju',
+        # 'cosmos195asgku87kxgu48s447z0ryhsyn5rl3y5724g3',
+        # 'juno195asgku87kxgu48s447z0ryhsyn5rl3yzvfw0d',
+        # 'osmo195asgku87kxgu48s447z0ryhsyn5rl3yu9e97r',
+        # 'chihuahua195asgku87kxgu48s447z0ryhsyn5rl3yht8mfn',
+        # 'inj1h0ypsdtjfcjynqu3m75z2zwwz5mmrj8rtk2g52',
+        # 'agoric1wmjfhcdl6d5wqq56k7qdy7zk9wnstmqezqpqyp',
+        # 'dym1h0ypsdtjfcjynqu3m75z2zwwz5mmrj8rnz32ru',
+        # 'neutron195asgku87kxgu48s447z0ryhsyn5rl3ysprhjk',
+        # 'persistence195asgku87kxgu48s447z0ryhsyn5rl3y6jvxx4',
+        # 'quick195asgku87kxgu48s447z0ryhsyn5rl3yl6683r',
+        # 'stride195asgku87kxgu48s447z0ryhsyn5rl3yh42fua',
+        # 'stars195asgku87kxgu48s447z0ryhsyn5rl3yqzagrq',
+        # 'osmo17txgrugvf4snxrxladf8v9ge8lw2n4hjq2j79z',
+        # 'inj1ynrh862r4nq0e0uav09uk6ku5yxt9k8jkt0y2j',
+        # 'agoric18j75nrrx765xx73gdrhu4d90hkkkrmfwss57td',
+        'osmo1kqh9v54k9qvrz5ggplndzlgynflk2n33fylu8m',
     ]
     for addr in addresses:
         hrp, converted = bech32decode(addr)
-        print(addr, hrp, converted)
-        # print(bech32encode('inj', converted)) 
+        print(converted, hrp, addr)
+        print(bech32encode('stars', converted)) 
 
 if __name__ == '__main__':
-    test()
-    # main()    
+    # test()
+    main()    
